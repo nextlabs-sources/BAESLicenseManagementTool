@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="setup/LicenseManagementTool/helper/lmt-connection.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/commons-fileupload-1.3.1.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/commons-logging.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/delta-1.0.10.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/gmbal-api-only.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/gson-2.3.1.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/ha-api.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/itextpdf-5.5.3.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/javax.faces.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/jaxb-core.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/jaxws-api.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/jaxws-rt.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/log4jdbc4-1.2.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/management-api.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/policy.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/primefaces-5.1.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/slf4j-api-1.7.7.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/slf4j-log4j12-1.7.7.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/stax-ex.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/streambuffer.jar"/>
+	<classpathentry kind="lib" path="xlib/jar/tomcat-jdbc.jar"/>
+	<classpathentry kind="lib" path="setup/LicenseManagementTool/server/apache-tomcat-7.0.57/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="setup/LicenseManagementTool/server/apache-tomcat-7.0.57/lib/servlet-api.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

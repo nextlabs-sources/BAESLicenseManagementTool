@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+		<f:metadata>
+			<f:event type="preRenderView"
+				listener="#{userSessionBean.onPageLoad}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Asynchronous Tasks" styleClass="page-title"></h:outputText>
+		<p:separator />
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" globalOnly="true"/>
+
+		<h:form>
+			<p:tabView dynamic="true" styleClass="task-tabs-view" style = "margin-bottom:2%;">
+
+				<p:tab title="Tasks for User Licenses">
+					<p:poll interval="2" ignoreAutoUpdate="true"
+						listener="#{manageExecutorServiceBean.updateLicenseProgress}"
+						update="license-accordion:license-executing-task-grid license-accordion:license-completed-tasks license-accordion:license-pending-tasks" />
+					<p:accordionPanel id="license-accordion" multiple="true">
+						<p:tab title="Executing Task" id="license-executing-task-tab">
+							<h:panelGrid columns="1" id="license-executing-task-grid"
+								styleClass="executing-task">
+								<h:outputText value="None"
+									rendered="#{manageExecutorServiceBean.executingLicenseTask == null}" />
+								<h:outputText escape="false"
+									value="#{manageExecutorServiceBean.executingLicenseTask.taskName}"
+									rendered="#{manageExecutorServiceBean.executingLicenseTask!= null}" />
+								<p:progressBar
+									rendered="#{manageExecutorServiceBean.executingLicenseTask!= null}"
+									value="#{manageExecutorServiceBean.executingLicenseTask.progress}"
+									labelTemplate="{value}%" styleClass="animated" global="false">
+								</p:progressBar>
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="Recently Completed Tasks">
+							<p:dataTable rows="10" paginatorAlwaysVisible="true"
+								value="#{manageExecutorServiceBean.recentCompletedLicenseTasks}"
+								var="task" styleClass="task-table" rowKey="#{task.taskName}"
+								sortBy="#{task.timeStart}" sortOrder="descending"
+								id="license-completed-tasks">
+								<p:column width="30">
+									<p:commandButton styleClass="task-fine button-with-border"
+										value="" icon="ui-icon-check"
+										oncomplete="PF('view-task').show();" rendered="#{!task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+									<p:commandButton styleClass="task-error button-with-border"
+										value="" icon="ui-icon-notice"
+										oncomplete="PF('view-task').show();" rendered="#{task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+								</p:column>
+								<p:column headerText="Task Name">
+									<h:outputText value="#{task.taskName}" escape="false" />
+								</p:column>
+
+							</p:dataTable>
+						</p:tab>
+
+						<p:tab title="Pending Tasks" id="license-pending-task-tab">
+							<!-- <h:outputText id="license-pending-task-count"
+								value="Number of pending tasks: #{manageExecutorServiceBean.licensePendingTasks.size()}" /> -->
+							<p:dataList
+								value="#{manageExecutorServiceBean.licensePendingTasks}"
+								var="task" styleClass="task-list" itemType="none"
+								id="license-pending-tasks">
+								<h:outputText value="#{task.taskName}"
+									rendered="#{task.progress ==0}" escape="false" />
+							</p:dataList>
+						</p:tab>
+					</p:accordionPanel>
+				</p:tab>
+
+
+				<p:tab title="Tasks for License Groups">
+					<p:poll interval="2" ignoreAutoUpdate="true"
+						listener="#{manageExecutorServiceBean.updateGroupProgress}"
+						update="group-accordion:group-executing-task-grid group-accordion:group-completed-tasks group-accordion:group-pending-tasks" />
+					<p:accordionPanel id="group-accordion" multiple="true">
+						<p:tab title="Executing Task">
+							<h:panelGrid columns="1" id="group-executing-task-grid"
+								styleClass="executing-task">
+								<h:outputText value="None"
+									rendered="#{manageExecutorServiceBean.executingGroupTask == null}" />
+								<h:outputText escape="false"
+									value="#{manageExecutorServiceBean.executingGroupTask.taskName}"
+									rendered="#{manageExecutorServiceBean.executingGroupTask!= null}" />
+								<p:progressBar
+									rendered="#{manageExecutorServiceBean.executingGroupTask!= null}"
+									value="#{manageExecutorServiceBean.executingGroupTask.progress}"
+									labelTemplate="{value}%" styleClass="animated" global="false">
+								</p:progressBar>
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="Recently Completed Tasks">
+							<p:dataTable rows="10" paginatorAlwaysVisible="true"
+								value="#{manageExecutorServiceBean.recentCompletedGroupTasks}"
+								var="task" styleClass="task-table" rowKey="#{task.taskName}"
+								id="group-completed-tasks" sortBy="#{task.timeStart}"
+								sortOrder="descending">
+								<p:column width="30">
+									<p:commandButton styleClass="task-fine button-with-border"
+										value="" icon="ui-icon-check"
+										oncomplete="PF('view-task').show();" rendered="#{!task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+									<p:commandButton styleClass="task-error button-with-border"
+										value="" icon="ui-icon-notice"
+										oncomplete="PF('view-task').show();" rendered="#{task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+								</p:column>
+
+								<p:column headerText="Task Name">
+									<h:outputText value="#{task.taskName}" escape="false" />
+								</p:column>
+
+							</p:dataTable>
+						</p:tab>
+
+						<p:tab id="group-pending-task-tab" title="Pending Tasks">
+							<!-- <h:outputText id="group-pending-task-count"
+								value="Number of pending tasks: #{manageExecutorServiceBean.groupPendingTasks.size()}" /> -->
+							<p:dataList
+								value="#{manageExecutorServiceBean.groupPendingTasks}"
+								var="task" styleClass="task-list" itemType="none"
+								id="group-pending-tasks">
+								<h:outputText value="#{task.taskName}" escape="false"
+									rendered="#{task.progress ==0}" />
+							</p:dataList>
+						</p:tab>
+					</p:accordionPanel>
+				</p:tab>
+
+
+				<p:tab title="Tasks for User Projects">
+					<p:poll interval="2" ignoreAutoUpdate="true"
+						listener="#{manageExecutorServiceBean.updateProjectProgress}"
+						update="project-accordion:project-executing-task-grid project-accordion:project-completed-tasks project-accordion:project-pending-tasks" />
+					<p:accordionPanel id="project-accordion" multiple="true">
+						<p:tab title="Executing Task">
+							<h:panelGrid columns="1" id="project-executing-task-grid"
+								styleClass="executing-task">
+								<h:outputText value="None"
+									rendered="#{manageExecutorServiceBean.executingProjectTask == null}" />
+								<h:outputText escape="false"
+									value="#{manageExecutorServiceBean.executingProjectTask.taskName}"
+									rendered="#{manageExecutorServiceBean.executingProjectTask!= null}" />
+								<p:progressBar
+									rendered="#{manageExecutorServiceBean.executingProjectTask!= null}"
+									value="#{manageExecutorServiceBean.executingProjectTask.progress}"
+									labelTemplate="{value}%" styleClass="animated" global="false">
+								</p:progressBar>
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="Recently Completed Tasks">
+							<p:dataTable rows="10" paginatorAlwaysVisible="true"
+								value="#{manageExecutorServiceBean.recentCompletedProjectTasks}"
+								var="task" styleClass="task-table" rowKey="#{task.taskName}"
+								id="project-completed-tasks" sortBy="#{task.timeStart}"
+								sortOrder="descending">
+								<p:column width="30">
+									<p:commandButton styleClass="task-fine button-with-border"
+										value="" icon="ui-icon-check"
+										oncomplete="PF('view-task').show();" rendered="#{!task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+									<p:commandButton styleClass="task-error button-with-border"
+										value="" icon="ui-icon-notice"
+										oncomplete="PF('view-task').show();" rendered="#{task.error}"
+										action="#{manageExecutorServiceBean.selectTask}"
+										update=":task-details-form:view-task-grid :task-details-form:task-log">
+										<f:setPropertyActionListener value="#{task}"
+											target="#{manageExecutorServiceBean.selectedTask}" />
+									</p:commandButton>
+								</p:column>
+								<p:column headerText="Task Name">
+									<h:outputText value="#{task.taskName}" escape="false" />
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+
+						<p:tab title="Pending Tasks">
+							<!-- <h:outputText id="project-pending-task-count"
+								value="Number of pending tasks: #{manageExecutorServiceBean.projectPendingTasks.size()}" /> -->
+							<p:dataList
+								value="#{manageExecutorServiceBean.projectPendingTasks}"
+								var="task" styleClass="task-list" itemType="none"
+								id="project-pending-tasks">
+								<h:outputText value="#{task.taskName}"
+									rendered="#{task.progress ==0}" escape="false" />
+							</p:dataList>
+						</p:tab>
+					</p:accordionPanel>
+				</p:tab>
+			</p:tabView>
+		</h:form>
+
+		<h:form id="task-details-form">
+			<p:dialog header="Task Details" widgetVar="view-task" modal="true"
+				closeOnEscape="true" id="view-task" resizable="false" width="72%"
+				styleClass="wide-dialog" dynamic="true">
+				<h:panelGrid columns="2" cellspacing="7" width="96%"
+					id="view-task-grid"
+					style="margin-left:2% !important; margin-right:2% !important;">
+					<h:outputText value="Admin" styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.admin}"
+						escape="false"></h:outputText>
+
+					<h:outputText value="Started Time" styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.timeStart}"
+						escape="false"></h:outputText>
+
+					<h:outputText value="Trigger" styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.trigger}"
+						escape="false"></h:outputText>
+
+					<h:outputText value="Number of Users to Modify"
+						styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.numberOfUsers}"
+						escape="false"></h:outputText>
+
+					<h:outputText
+						value="Number of Applied Objects (License/License Group/Project)"
+						styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.numberOfObjects}"
+						escape="false"></h:outputText>
+
+					<h:outputText value="Number of Successful Updates"
+						styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.numberOfSuccess}"
+						escape="false"></h:outputText>
+
+					<h:outputText value="Number of Failed Updates"
+						styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.numberOfFailure}"
+						escape="false"></h:outputText>
+				</h:panelGrid>
+
+				<p:panel styleClass="task-details" header="Logs" id="task-log"
+					style="margin-top:10px">
+					<h:outputText
+						value="#{manageExecutorServiceBean.selectedTask.message}"
+						escape="false"></h:outputText>
+				</p:panel>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText styleClass="page-title" value="Quick Start"></h:outputText>
+		<p:separator />
+
+		<h:panelGrid columns="2" width="100%" styleClass="home-grid">
+			<p:panel styleClass="home-panel" header="Manage User">
+				<h:outputText
+					value="Manage Users Page provides authorized administrators means to :" />
+				<p:accordionPanel>
+					<p:tab title="Search User">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SEARCH_USER_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SEARCH_USER_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Bulk Assignment">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_BULK_ASSIGNMENT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_BULK_ASSIGNMENT_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Manage User Details">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_DETAILS_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_DETAILS_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_DETAILS_FUNC3')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('USER_DETAILS_FUNC4')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+			<p:panel styleClass="home-panel" header="Manage Licenses">
+				<h:outputText
+					value="Manage Licenses Page provides authorized administrators means to:" />
+				<p:accordionPanel>
+					<p:tab title="Search and View License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('VIEW_LICENSE_LIST_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SEARCH_LICENSE_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('VIEW_LICENSE_DETAILS_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Register New License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('CREATE_NEW_LICENSE_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('CREATE_NEW_LICENSE_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('CREATE_NEW_LICENSE_FUNC3')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Update License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('UPDATE_LICENSE_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('UPDATE_LICENSE_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('UPDATE_LICENSE_FUNC3')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Deactivate License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DEACTIVATE_LICENSE_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DEACTIVATE_LICENSE_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DEACTIVATE_LICENSE_FUNC3')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Activate License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('ACTIVATE_LICENSE_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Delete License">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DELETE_LICENSE_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Bulk License Assignment">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('BULK_LICENSE_ASSIGNMENT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('BULK_LICENSE_ASSIGNMENT_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('BULK_LICENSE_ASSIGNMENT_FUNC3')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+			<p:panel styleClass="home-panel" header="Manage Project">
+				<h:outputText
+					value="Manage Projects Page provides authorized administrators means to:" />
+				<p:accordionPanel>
+					<p:tab title="Search and View Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('VIEW_PROJECT_LIST_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SEARCH_PROJECT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('VIEW_PROJECT_DETAILS_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Register New Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('CREATE_NEW_PROJECT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('CREATE_NEW_PROJECT_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Update Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('UPDATE_PROJECT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('UPDATE_PROJECT_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+					<p:tab title="Deactivate Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DEACTIVATE_PROJECT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DEACTIVATE_PROJECT_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Activate Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('ACTIVATE_PROJECT_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Delete Project">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('DELETE_PROJECT_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+
+					<p:tab title="Bulk Project Assignment">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('BULK_PROJECT_ASSIGNMENT_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('BULK_PROJECT_ASSIGNMENT_FUNC2')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+			<p:panel styleClass="home-panel" header="Manage Group">
+				<h:outputText
+					value="Manage Group Page provides authorized administrators means to:" />
+				<p:accordionPanel>
+					<p:tab title="Search and View Group Members">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('GET_GROUP_MEMBERS_FUNC1')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+			<p:panel styleClass="home-panel" header="Audit Log">
+				<h:outputText value="Audit Log provides the following functions: " />
+				<p:accordionPanel>
+					<p:tab title="Active Directory Changes">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('AUDIT_LOG_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('AUDIT_LOG_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('AUDIT_LOG_FUNC3')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+
+			<p:panel styleClass="home-panel" header="Synchronize">
+				<h:outputText
+					value="Synchronize Page provides authorized administrators means to:" />
+				<p:accordionPanel>
+					<p:tab
+						title="Synchronize data between Active Directory and Database">
+						<h:panelGrid columns="1">
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SYNCHRONIZE_FUNC1')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SYNCHRONIZE_FUNC2')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SYNCHRONIZE_FUNC3')}" />
+							<h:outputText
+								value="#{userSessionBean.getContextHelper('SYNCHRONIZE_FUNC4')}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+		</h:panelGrid>
+
+		<p:separator />
+		<h:outputText styleClass="page-title" value="Registered Attributes"></h:outputText>
+		<p:separator />
+
+		<h:panelGrid columns="2" width="100%" styleClass="home-grid-1">
+			<p:panel styleClass="home-panel-1"
+				header="Registered Controlled Data Set">
+				<p:accordionPanel
+					value="#{manageHomeBean.userControlledAttributeLabels}"
+					var="attributeLabel">
+					<p:tab title="#{attributeLabel}">
+						<h:panelGrid columns="2">
+							<h:outputText value="Active Directory Attribute: " />
+							<h:outputText
+								value="#{manageHomeBean.getControlledAttributeName(attributeLabel)}" />
+
+							<h:outputText value="Authorized Security Group: " />
+							<h:outputText
+								value="#{manageHomeBean.getControlledAttributeSecurityGroup(attributeLabel)}" />
+						</h:panelGrid>
+					</p:tab>
+				</p:accordionPanel>
+			</p:panel>
+			<p:panel styleClass="home-panel-1" header="User Displayed Details">
+				<p:dataGrid styleClass="home-panel-list" columns="2"
+					value="#{manageHomeBean.userDisplayedAttributeLabels}"
+					var="attributeLabel" activeIndex="none">
+					<h:outputText value="#{attributeLabel}" style="margin-left:5%"></h:outputText>
+				</p:dataGrid>
+			</p:panel>
+		</h:panelGrid>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+	<title><ui:insert name="title">License Management Tool</ui:insert></title>
+	<h:outputStylesheet name="layout.css" library="css" />
+	<h:outputStylesheet name="bae.css" library="css" />
+	<link rel="shortcut icon" type="image/x-icon" href="resources/images/favicon1.ico"/>
+</h:head>
+
+<h:body style="background:white">
+	<f:event type="preRenderView"
+			listener="#{userSessionBean.preRender}" />
+	<div id="header">
+		<ui:insert name="header">
+    	Header area.  See comments below this line in the source.
+    	<!--  include your header file or uncomment the include below and create header.xhtml in this directory -->
+			<!-- <ui:include src="header.xhtml"/> -->
+		</ui:insert>
+	</div>
+
+
+	<div id="content">
+		<div class="login-panel">
+			<ui:insert name="content">
+			</ui:insert>
+		</div>
+	</div>
+
+	<div id="footer">
+		<ui:insert name="footer">
+    	Footer area.  See comments below this line in the source.
+    	<!--  include your header file or uncomment the include below and create footer.xhtml in this directory -->
+			<!--<ui:include src="footer.xhtml"/>  -->
+		</ui:insert>
+	</div>
+
+</h:body>
+
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+	<title><ui:insert name="title">License Management Tool</ui:insert></title>
+	<h:outputStylesheet name="layout.css" library="css" />
+	<h:outputStylesheet name="bae.css" library="css" />
+	<link rel="shortcut icon" type="image/x-icon"
+		href="resources/images/favicon1.ico" />
+</h:head>
+
+<h:body>
+	<f:event type="preRenderView" listener="#{userSessionBean.checkDB}" />
+	<h:panelGroup id="sticky-header">
+		<div class="header">
+			<img src="resources/images/logo-color-white-text.png"
+				class="header-logo" />
+
+			<h:form styleClass="header-form">
+				<h:outputText value="License Management Tool"
+					styleClass="header-title"></h:outputText>
+				<h:outputText value = "v2.1" style = "margin-left:20px; color: #DDDDDD; font-weight:bold"/>
+				<p:commandButton value="Logout" action="#{userSessionBean.logout}"
+					icon="ui-icon-arrowthickstop-1-w" ajax="false"
+					styleClass="header-button button-with-border"></p:commandButton>
+			</h:form>
+
+			<ui:insert name="header">
+			</ui:insert>
+		</div>
+		<div class="header-separator">
+			<h:form id="profile-form" styleClass="profile-form">
+				<p:commandButton styleClass="profile-button" id="profile"
+					type="button" value="#{userSessionBean.userName}"></p:commandButton>
+				<p:overlayPanel id="profile-panel" for="profile" hideEffect="fade"
+					showEffect="fade" styleClass="profile-panel">
+					<p:dataList value="#{userSessionBean.authorizedAttributeLabel}"
+						var="attribute" styleClass="profile-list" itemType="none">
+						<f:facet name="header">
+            				Authorized Attributes
+        				</f:facet>
+        				#{attribute}
+    				</p:dataList>
+				</p:overlayPanel>
+			</h:form>
+		</div>
+	</h:panelGroup>
+	<div class="content">
+		<div class="left-content">
+			<h:form id="menu-form">
+				<p:menu styleClass="menu">
+					<p:menuitem value="Quick Start" outcome="home"/>
+					<p:menuitem value="Manage Users" outcome="manageUser" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Manage Licenses" outcome="manageLicense" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Manage Projects" outcome="manageProject" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Manage Groups" outcome="manageGroup" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Tasks" outcome="manageTask" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Audit Log" outcome="viewLog" disabled="#{!userSessionBean.isLicenseManager}"/>
+					<p:menuitem value="Synchronize" outcome="synchronize" disabled="#{!userSessionBean.isAdmin}"/>
+				</p:menu>
+			</h:form>
+
+		</div>
+
+		<div id="content" class="center-content">
+			<p:growl id="growl" showDetail="true" autoUpdate="true"
+				sticky="false" severity="info, error" />
+			<ui:insert name="content"></ui:insert>
+			<img id="loading-icon" src="resources/images/bdrWh.png"
+				class='loading-icon' />
+			<script type="text/javascript">
+				function loading() {
+					document.getElementById("loading-icon").style.display = "block";
+				}
+
+				function doneLoading() {
+					document.getElementById("loading-icon").style.display = "none";
+				}
+			</script>
+			<div class="clr" style="clear: both;"></div>
+		</div>
+	</div>
+	<div id="footer" class="footer">
+		<div class="footer-separator">
+			<h:panelGrid columns="3" styleClass="footer-grid">
+				<h:graphicImage url="resources/images/logo.PNG"
+					styleClass="footer-logo-baes" />
+				<h:outputText value="Powered by" style="color: #AAAAAA"></h:outputText>
+				<h:graphicImage url="resources/images/logo_nextlabs.png"
+					class="footer-logo-nextlabs" />
+			</h:panelGrid>
+
+		</div>
+		<ui:insert name="footer"></ui:insert>
+	</div>
+
+</h:body>
+
+</html>

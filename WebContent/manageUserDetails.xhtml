@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:form>
+			<h:outputText value="Manage Users Details" styleClass="page-title"></h:outputText>
+
+			<p:commandButton value="Refresh" style="float:right"
+				styleClass="button-with-border" icon="ui-icon-refresh"
+				onclick="loading();" onsuccess="doneLoading();"
+				action="#{manageUserDetailsBean.refreshFrontEnd}"
+				update=":attribute-list-form:attribute-list :project-list-form:project-list :user-information-panel :attribute-list-form"></p:commandButton>
+
+			<p:separator />
+		</h:form>
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" />
+
+		<p:dataGrid var="attribute"
+			rendered="#{manageUserDetailsBean.displayUser}"
+			id="user-information-panel"
+			value="#{manageUserDetailsBean.userAttributeList}" columns="3"
+			layout="grid" styleClass="info-data-grid">
+
+			<f:facet name="header">
+				User Information
+				</f:facet>
+			<h:panelGrid styleClass="info-grid" columns="2">
+				<h:outputText value="#{attribute.element0} "
+					styleClass="output-label"></h:outputText>
+				<h:outputText value="#{attribute.element1}" style="float:right"></h:outputText>
+			</h:panelGrid>
+		</p:dataGrid>
+
+
+		<p:separator rendered="#{manageUserDetailsBean.displayUser}"
+			id="separator2" />
+		<h:form id="attribute-list-form">
+			<p:dataTable paginatorAlwaysVisible="false" var="attribute"
+				rowKey="#{attribute}" paginator="true" paginatorPosition="bottom"
+				value="#{manageUserDetailsBean.attributeValues}"
+				styleClass="attribute-list"
+				rendered="#{manageUserDetailsBean.displayUser}" id="attribute-list">
+				<f:facet name="header">
+				User Licenses
+			</f:facet>
+
+				<p:column width="35%" headerText="Name">
+					<h:outputText value="#{attribute.element0}" />
+				</p:column>
+
+				<p:column width="60%" headerText="Value">
+					<h:outputText value="#{attribute.element1}" />
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important">
+					<p:commandButton
+						disabled="#{manageUserDetailsBean.disableEditFor(attribute.element0)}"
+						styleClass="button-with-border button-in-grid"
+						oncomplete="PF('edit-dialog').show();" icon="ui-icon-pencil"
+						action="#{manageUserDetailsBean.getPickListForLicenses}"
+						update=":attribute-list-form:edit-dialog" onclick="loading();"
+						onsuccess="doneLoading();">
+						<f:setPropertyActionListener value="#{attribute.element0}"
+							target="#{manageUserDetailsBean.selectedAttribute}" />
+					</p:commandButton>
+				</p:column>
+
+
+			</p:dataTable>
+			<p:dialog header="Edit User's Licenses" widgetVar="edit-dialog"
+				modal="true" closeOnEscape="true" width="auto" id="edit-dialog"
+				resizable="false">
+				<!-- <h:outputText
+					value="Availabe list displays up to #{manageUserDetailsBean.filterLimit} items. Filter to refine your list."
+					styleClass="context-helper" /> -->
+				<!-- <h:outputText
+					value="#{userSessionBean.getContextHelper('USER_UPDATE_LICENSE_HELPER1')}"
+					styleClass="context-helper" style="margin-bottom: 5%" /> -->
+				<h:outputText styleClass="context-helper"
+					style="width:400px; color:red !important;margin-bottom:10px"
+					value="#{userSessionBean.getContextHelper('USER_UPDATE_LICENSE_HELPER1')}"
+					rendered="#{manageUserDetailsBean.invalidLicenses.size() > 0}" />
+				<p:dataGrid columns="3" layout="grid"
+					value="#{manageUserDetailsBean.invalidLicenses}" var="license"
+					rendered="#{manageUserDetailsBean.invalidLicenses.size() > 0}">
+					<h:outputText value="#{license.name}" />
+				</p:dataGrid>
+
+				<p:commandButton value="Remove From User" style="margin-bottom:20px"
+					rendered="#{manageUserDetailsBean.invalidLicenses.size() > 0}"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageUserDetailsBean.removeInvalidLicenses}"
+					update=":attribute-list-form:attribute-list"
+					oncomplete="PF('edit-dialog').hide();" onclick="loading();"
+					onsuccess="doneLoading();"></p:commandButton>
+				<p:inputText
+					value="#{manageUserDetailsBean.filterAvailableLicenses}"
+					id="available-license-filter">
+					<p:ajax event="keyup"
+						listener="#{manageUserDetailsBean.updateLicensePickList}"
+						update="license-picklist"></p:ajax>
+				</p:inputText>
+
+				<p:pickList id="license-picklist" showTargetFilter="true"
+					value="#{manageUserDetailsBean.pickLicenses}" var="license"
+					itemValue="#{license}" itemLabel="#{license}">
+
+					<p:ajax event="transfer"
+						listener="#{manageUserDetailsBean.onLicensePickListTransfer}" />
+					<f:facet name="sourceCaption">Available Licenses</f:facet>
+					<f:facet name="targetCaption">Granted Licenses</f:facet>
+
+				</p:pickList>
+				<p:commandButton value="Update"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageUserDetailsBean.updateAttribute}"
+					update=":attribute-list-form:attribute-list"
+					oncomplete="PF('edit-dialog').hide();" onclick="loading();"
+					onsuccess="doneLoading();"></p:commandButton>
+			</p:dialog>
+
+		</h:form>
+
+		<p:separator rendered="#{manageUserDetailsBean.displayUser}"
+			id="separator3" />
+		<h:form id="project-list-form">
+			<p:panel rendered="#{manageUserDetailsBean.displayUser}"
+				id="project-list" header="User Projects"
+				styleClass="panel-with-table">
+				<p:panelGrid>
+
+					<p:column style="width:96.5%">
+						<p:dataTable paginatorAlwaysVisible="false" var="project"
+							style="margin:0px !important;" rowKey="#{project}"
+							paginator="true" paginatorPosition="bottom"
+							value="#{manageUserDetailsBean.userCurrentProjects}"
+							rendered="#{manageUserDetailsBean.displayUser}">
+
+							<p:column width="35%" headerText="Name">
+								<h:outputText value="#{project.name}" />
+							</p:column>
+
+							<p:column width="65%" headerText="Description">
+								<h:outputText value="#{project.description}" />
+							</p:column>
+						</p:dataTable>
+					</p:column>
+
+					<p:column
+						style="border:1px solid #D5D5D5 !important; border-left:0px !important;padding:5px !important"
+						width="60">
+						<p:commandButton styleClass="button-with-border"
+							style="height:100% !important; width:100%"
+							oncomplete="PF('edit-project-dialog').show();"
+							icon="ui-icon-pencil"
+							action="#{manageUserDetailsBean.getPickListForProjects}"
+							update=":project-list-form:edit-project-dialog"
+							onclick="loading();" onsuccess="doneLoading();">
+						</p:commandButton>
+					</p:column>
+				</p:panelGrid>
+			</p:panel>
+			<p:dialog header="Edit Project" widgetVar="edit-project-dialog"
+				modal="true" closeOnEscape="true" width="auto"
+				id="edit-project-dialog" resizable="false">
+				<h:outputText styleClass="context-helper"
+					style="width:400px; color:red !important;margin-bottom:10px"
+					value="#{userSessionBean.getContextHelper('USER_UPDATE_PROJECT_HELPER1')}"
+					rendered="#{manageUserDetailsBean.invalidProjects.size() > 0}" />
+				<p:dataGrid columns="3" layout="grid"
+					value="#{manageUserDetailsBean.invalidProjects}" var="project"
+					rendered="#{manageUserDetailsBean.invalidProjects.size() > 0}">
+					<h:outputText value="#{project.name}" />
+				</p:dataGrid>
+
+				<p:commandButton value="Remove From User" style="margin-bottom:20px"
+					rendered="#{manageUserDetailsBean.invalidProjects.size() > 0}"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageUserDetailsBean.removeInvalidProjects}"
+					update=":attribute-list-form:attribute-list"
+					oncomplete="PF('edit-project-dialog').hide();" onclick="loading();"
+					onsuccess="doneLoading();"></p:commandButton>
+				<h:panelGrid columns="2" cellpadding="5" style="margin-bottom:20px">
+					<p:selectBooleanCheckbox
+						value="#{manageUserDetailsBean.assignLicensesWithProject}" />
+					<h:outputText
+						value="Assign project's licenses when assigning	 project" />
+				</h:panelGrid>
+				<p:inputText
+					value="#{manageUserDetailsBean.filterAvailableProjects}"
+					id="available-project-filter">
+					<p:ajax event="keyup"
+						listener="#{manageUserDetailsBean.updateProjectPickList}"
+						update="project-picklist"></p:ajax>
+				</p:inputText>
+
+				<p:pickList id="project-picklist" showTargetFilter="true"
+					value="#{manageUserDetailsBean.pickProjects}" var="project"
+					itemValue="#{project}" itemLabel="#{project}">
+					<p:ajax event="transfer"
+						listener="#{manageUserDetailsBean.onProjectPickListTransfer}" />
+					<f:facet name="sourceCaption">Available Projects</f:facet>
+					<f:facet name="targetCaption">Current Projects</f:facet>
+
+				</p:pickList>
+				<p:commandButton value="Update"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageUserDetailsBean.updateUserProjects}"
+					update=":project-list-form:project-list :user-information-panel :attribute-list-form"
+					oncomplete="PF('edit-project-dialog').hide();" onclick="loading();"
+					onsuccess="doneLoading();"></p:commandButton>
+			</p:dialog>
+
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

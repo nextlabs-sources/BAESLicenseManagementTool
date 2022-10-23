@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/LoginTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:form class="login-form">
+			<h:panelGrid columns="2" cellspacing="5" styleClass="login-grid">
+				<h:outputText value="Username"></h:outputText>
+				<p:inputText value="#{userSessionBean.userName}"></p:inputText>
+
+				<h:outputText value="Password"></h:outputText>
+				<p:password value="#{userSessionBean.password}"></p:password>
+
+				<h:outputText />
+
+			</h:panelGrid>
+			<h:panelGrid columns="1"  width = "100%">
+				<p:commandButton action="#{userSessionBean.login}" value="Login"
+					ajax="false" styleClass="button-with-border" style="width:100%"></p:commandButton>
+			</h:panelGrid>
+		</h:form>
+		<p:messages showDetail="true" autoUpdate="true" closable="true"
+			globalOnly="true"
+			style="position:absolute;float:right;top:95%;width:100%" />
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

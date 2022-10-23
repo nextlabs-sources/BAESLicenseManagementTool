@@ -1,0 +1,466 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Manage Projects" styleClass="page-title"></h:outputText>
+		<p:separator />
+		<h:form id="project-form">
+			<p:toolbar styleClass="data-toolbar" id="project-toolbar">
+				<f:facet name="left">
+					<p:commandButton type="button" value="New" icon="ui-icon-document"
+						onclick="PF('create-new-dialog').show();"
+						update=":create-new-form:create-new-dialog"
+						styleClass="button-with-border-top-left" />
+					<!-- 					<p:commandButton type="button" value="Activate"
+						onclick="PF('activate-dialog').show();" icon="ui-icon-power"
+						update=":activate-project-form:activate-dialog"
+						disabled="#{manageProjectBean.disableDelete || manageProjectBean.showDeactivation == 0}"
+						id="activate-button" />
+					<p:commandButton type="button" value="Deactivate"
+						onclick="PF('deactivate-dialog').show();" icon="ui-icon-cancel"
+						update=":deactivate-project-form:deactivate-dialog"
+						disabled="#{manageProjectBean.disableDelete || manageProjectBean.showDeactivation == 1}"
+						id="deactivate-button" />
+					<p:commandButton type="button" value="Delete"
+						onclick="PF('delete-dialog').show();" icon="ui-icon-trash"
+						update=":delete-project-form:delete-dialog"
+						styleClass="button-with-border-top-right"
+						disabled="#{manageProjectBean.disableDelete}" id="delete-button" />
+					<p:commandButton type="button" value="Import"
+						icon="ui-icon-arrowthickstop-1-s" disabled="true" rendered="false" />
+					<p:commandButton type="button" value="Export"
+						icon="ui-icon-arrowthickstop-1-n"
+						styleClass="button-with-border-top-right" disabled="true"
+						rendered="false" /> -->
+				</f:facet>
+				<f:facet name="right">
+					<p:selectOneButton value="#{manageProjectBean.showDeactivation}"
+						styleClass="one-button-toolbar">
+						<f:selectItem
+							itemLabel="Active (#{manageProjectBean.activeCount})"
+							itemValue="0" id="active" />
+						<f:selectItem
+							itemLabel="Inactive (#{manageProjectBean.inactiveCount})"
+							itemValue="1" id="inactive" />
+						<p:ajax event="change"
+							listener="#{manageProjectBean.toggleDeactivation}"
+							update=":project-form:project-table :project-form:project-toolbar" />
+					</p:selectOneButton>
+				</f:facet>
+			</p:toolbar>
+
+			<p:messages showDetail="true" autoUpdate="true" closable="true"
+				globalOnly="true" severity="info, warn" />
+
+			<p:dataTable var="project"
+				value="#{manageProjectBean.projectLazyList}" paginator="true"
+				paginatorAlwaysVisible="true" rows="30" lazy="true"
+				paginatorPosition="bottom" resizableColumns="true"
+				selection="#{manageProjectBean.selectedProjects}"
+				rowKey="#{project.name}" id="project-table"
+				style="margin-top:0px !important" sortBy="#{project.name}"
+				rowsPerPageTemplate="10, 30, 50, 100, 500, 1000">
+				<f:facet name="header">
+            		Projects
+        		</f:facet>
+				<p:ajax listener="#{manageProjectBean.onRowSelect}"
+					event="rowSelectCheckbox" update=":project-form:project-toolbar" />
+				<p:ajax listener="#{manageProjectBean.onRowUnselect}"
+					event="rowUnselectCheckbox" update=":project-form:project-toolbar" />
+				<p:ajax event="toggleSelect" update=":project-form:project-toolbar"
+					listener="#{manageProjectBean.onToggleSelect}" />
+				<p:ajax listener="#{manageProjectBean.onFilter}"
+					update=":project-form:project-table" event="filter" />
+
+				<p:column selectionMode="multiple" style="text-align:center"
+					width="4%" />
+
+				<p:column headerText="Project" width="26%"
+					filterBy="#{project.name}" sortBy="#{project.name}">
+					<h:outputText value="#{project.name}" />
+				</p:column>
+				<p:column headerText="Description" width="57%">
+					<h:outputText value="#{project.description}" />
+				</p:column>
+
+
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="View">
+					<p:commandButton icon="ui-icon-search"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageProjectBean.getProjectDetails}"
+						update=":project-detail-form:view-project" onclick="loading();"
+						onsuccess="doneLoading();">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="50" style="text-align:center !important"
+					headerText="Edit">
+					<p:commandButton icon="ui-icon-pencil"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageProjectBean.getEditProject}"
+						oncomplete="PF('edit-project').show();"
+						update=":edit-form:edit-project">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="Bulk"
+					rendered="#{manageProjectBean.showDeactivation == 0}">
+					<p:commandButton icon="ui-icon-tag"
+						styleClass="button-with-border button-in-grid"
+						oncomplete="PF('bulk-update-dialog').show();"
+						action="#{manageProjectBean.getProjectForBulkUpdate}"
+						update=":bulk-update-project-form:bulk-update-dialog">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="DEACT"
+					rendered="#{manageProjectBean.showDeactivation == 0}">
+					<p:commandButton icon="ui-icon-cancel"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageProjectBean.getEditProject}"
+						oncomplete="PF('deactivate-dialog').show();"
+						update=":deactivate-project-form:deactivate-dialog">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="ACT"
+					rendered="#{manageProjectBean.showDeactivation == 1}">
+					<p:commandButton icon="ui-icon-power"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageProjectBean.getEditProject}"
+						oncomplete="PF('activate-dialog').show();"
+						update=":activate-project-form:activate-dialog">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="DEL"
+					rendered="#{manageProjectBean.showDeactivation == 1}">
+					<p:commandButton icon="ui-icon-trash"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageProjectBean.getEditProject}"
+						oncomplete="PF('delete-dialog').show();"
+						update=":delete-project-form:delete-dialog">
+						<f:setPropertyActionListener value="#{project.name}"
+							target="#{manageProjectBean.selectedProjectValue}" />
+					</p:commandButton>
+				</p:column>
+
+
+			</p:dataTable>
+
+
+		</h:form>
+
+		<h:form id="create-new-form">
+			<p:dialog header="Register New Project" widgetVar="create-new-dialog"
+				modal="true" closeOnEscape="true" width="auto"
+				id="create-new-dialog" resizable="false">
+				<h:panelGrid columns="3" cellspacing="7" styleClass="dialog-grid"
+					id="create-new-dialog-grid">
+					<p:outputLabel for="project-new-value" value="Name" />
+					<p:inputText value="#{manageProjectBean.newProject.name}"
+						required="true" id="project-new-value"></p:inputText>
+					<p:message for="project-new-value" display="tooltip" />
+
+
+					<p:outputLabel value="Description" />
+					<p:inputTextarea
+						value="#{manageProjectBean.newProject.description}"
+						autoResize="false"></p:inputTextarea>
+					<h:outputText></h:outputText>
+				</h:panelGrid>
+				<p:commandButton value="Create"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageProjectBean.createNewProject}"
+					id="project-new-button" onclick="loading();"
+					oncomplete="doneLoading();"
+					update=":project-form:project-table create-new-dialog-grid create-new-msg :project-form:project-toolbar"></p:commandButton>
+				<p:messages showDetail="true" autoUpdate="true" closable="true"
+					severity="error" for="create-new-form" id="create-new-msg" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="edit-form">
+			<p:dialog header="Update Project Details" widgetVar="edit-project"
+				modal="true" closeOnEscape="true" width="auto" id="edit-project"
+				resizable="false">
+				<h:panelGrid columns="2" cellspacing="7" styleClass="dialog-grid"
+					id="edit-project-dialog-grid">
+					<p:outputLabel value="Name" />
+					<p:outputLabel value="#{manageProjectBean.selectedProject.name}" />
+
+					<p:outputLabel value="Description" />
+					<p:inputTextarea
+						value="#{manageProjectBean.selectedProject.description}"
+						autoResize="false"></p:inputTextarea>
+				</h:panelGrid>
+				<p:commandButton value="Update"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageProjectBean.updateProject}"
+					id="project-update-button" onclick="loading();"
+					oncomplete="doneLoading();"
+					update=":project-form:project-table edit-project-dialog-grid"></p:commandButton>
+				<p:messages showDetail="true" autoUpdate="true" closable="true"
+					severity="error" for="edit-form" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="delete-project-form">
+			<p:dialog
+				header="Delete Project - #{manageProjectBean.selectedProjectValue}"
+				widgetVar="delete-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="delete-dialog" resizable="false">
+				<h:outputText value="Confirm Deletion" />
+				<h:panelGrid columns="2" width="100%" style="margin-top:30px">
+					<p:commandButton value="Delete"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageProjectBean.deleteProject}"
+						id="project-delete-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":project-form:project-table :project-form:project-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-multiple button-with-border"
+						type="button" onclick="PF('delete-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="deactivate-project-form">
+			<p:dialog
+				header="Deactivate Project - #{manageProjectBean.selectedProjectValue}"
+				widgetVar="deactivate-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="deactivate-dialog" resizable="false">
+				<h:panelGrid columns="1" width="100%">
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('PROJECT_DEACTIVATE_HELPER1')}" />
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('PROJECT_DEACTIVATE_HELPER2')}" />
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('PROJECT_DEACTIVATE_HELPER3')}" />
+				</h:panelGrid>
+				<h:panelGrid columns="2" width="100%" style="margin-top:30px">
+					<p:commandButton value="Deactivate"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageProjectBean.deactivateProject}"
+						id="project-deactivate-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":project-form:project-table :project-form:project-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-multiple button-with-border"
+						type="button" onclick="PF('deactivate-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="activate-project-form">
+			<p:dialog
+				header="Activate Project - #{manageProjectBean.selectedProjectValue}"
+				widgetVar="activate-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="activate-dialog" resizable="false">
+				<h:outputText value="Confirm Activation" />
+				<h:panelGrid columns="2" width="100%" style="margin-top:30px">
+					<p:commandButton value="Activate"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageProjectBean.activateProject}"
+						id="project-activate-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":project-form:project-table :project-form:project-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-multiple button-with-border"
+						type="button" onclick="PF('activate-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="bulk-update-project-form">
+			<p:dialog
+				header="Assign/Remove Project -  #{manageProjectBean.selectedProject.name}"
+				widgetVar="bulk-update-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="bulk-update-dialog" resizable="false">
+				<h:panelGrid columns="2" cellpadding="5" style="margin-bottom:10px"
+					id="checkbox-grid">
+					<p:selectBooleanCheckbox
+						rendered="#{manageProjectBean.bulkAction == 'assign'}"
+						value="#{manageProjectBean.assignLicensesWithProject}" />
+					<h:outputText
+						rendered="#{manageProjectBean.bulkAction == 'assign'}"
+						value="Assign project's licenses when assigning	 project" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" id="bulk-context-grid"
+					styleClass="bulk-context-grid">
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('PROJECT_BULK_HELPER1')}"
+						styleClass="context-helper"
+						rendered="#{manageProjectBean.bulkAction == 'assign'}" />
+
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('PROJECT_BULK_HELPER2')}"
+						styleClass="context-helper"
+						rendered="#{manageProjectBean.bulkAction == 'remove'}" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2" cellpadding="7" id="bulk-update-grid">
+					<h:outputText value="Action"></h:outputText>
+					<p:selectOneMenu value="#{manageProjectBean.bulkAction}"
+						id="bulk-action">
+						<f:selectItem itemLabel="Assign" itemValue="assign" />
+						<f:selectItem itemLabel="Remove" itemValue="remove" />
+						<p:ajax event="change"
+							update=":bulk-update-project-form:bulk-update-grid :bulk-update-project-form:bulk-button-grid :bulk-update-project-form:bulk-context-grid :bulk-update-project-form:checkbox-grid"
+							listener="#{manageProjectBean.changeActionListener}"></p:ajax>
+					</p:selectOneMenu>
+
+					<h:outputText value="Users"></h:outputText>
+					<p:autoComplete multiple="true"
+						value="#{manageProjectBean.inputUsers}" id="manual-input-field"
+						completeMethod="#{manageProjectBean.autoCompleteForUserInput}"
+						var="user" itemLabel="#{user}" itemValue="#{user}"
+						forceSelection="true">
+						<p:ajax event="itemSelect"
+							listener="#{manageProjectBean.onUserSelect}" />
+						<p:ajax event="itemUnselect"
+							listener="#{manageProjectBean.onUserUnselect}" />
+					</p:autoComplete>
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" id="bulk-button-grid" style="width:100%">
+					<p:commandButton value="Assign"
+						styleClass="dialog-button-single button-with-border"
+						action="#{manageProjectBean.bulkAssignRetractProject}"
+						id="project-assign-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":project-form:project-table :bulk-update-project-form:bulk-update-grid bulk-update-msg"
+						rendered="#{manageProjectBean.bulkAction == 'assign'}"></p:commandButton>
+					<p:commandButton value="Remove"
+						styleClass="dialog-button-single button-with-border"
+						action="#{manageProjectBean.bulkAssignRetractProject}"
+						id="project-retract-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":project-form:project-table :bulk-update-project-form:bulk-update-grid bulk-update-msg"
+						rendered="#{manageProjectBean.bulkAction == 'remove'}"></p:commandButton>
+				</h:panelGrid>
+
+				<p:messages showDetail="true" closable="true" severity="error"
+					for="bulk-update-project-form" id="bulk-update-msg" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="project-detail-form">
+			<p:dialog
+				header="View Project Information - #{manageProjectBean.selectedProject.name}"
+				widgetVar="view-project" modal="true" closeOnEscape="true"
+				id="view-project" resizable="false" width="72%"
+				styleClass="wide-dialog" dynamic="false">
+				<h:panelGrid columns="2" cellspacing="7" width="96%"
+					style="margin-left:2% !important; margin-right:2% !important;">
+					<h:outputText value="Name" styleClass="output-label"></h:outputText>
+					<h:outputText value="#{manageProjectBean.selectedProject.name}"></h:outputText>
+
+					<h:outputText value="Description" styleClass="output-label"></h:outputText>
+					<h:outputText
+						value="#{manageProjectBean.selectedProject.description}"></h:outputText>
+				</h:panelGrid>
+				<p:separator></p:separator>
+				<p:toolbar styleClass="data-toolbar">
+					<f:facet name="right">
+						<p:selectOneButton
+							value="#{manageProjectBean.showLicenseDeactivation}"
+							styleClass="one-button-toolbar">
+							<f:selectItem itemLabel="Active" itemValue="0" id="active" />
+							<f:selectItem itemLabel="Inactive" itemValue="1" id="inactive" />
+							<p:ajax event="change"
+								listener="#{manageProjectBean.updateProjectLicenseList}"
+								update=":project-detail-form:license-list-table" />
+						</p:selectOneButton>
+					</f:facet>
+				</p:toolbar>
+				<p:dataTable var="license"
+					style="width:100%; margin-top:0px !important"
+					value="#{manageProjectBean.lazyLicensesOfSelectedProject}"
+					paginator="true" paginatorAlwaysVisible="true" rows="10"
+					resizableColumns="true" paginatorPosition="bottom"
+					sortBy="#{license.name}" rowKey="#{license.name}"
+					id="license-list-table" lazy="true">
+					<f:facet name="header">
+            					Licenses
+        					</f:facet>
+					<p:column headerText="Value" width="25%" filterBy="#{license.name}"
+						sortBy="#{license.name}">
+						<h:outputText value="#{license.name}" />
+					</p:column>
+					<p:column headerText="Category" width="35%"
+						filterBy="#{license.label}" sortBy="#{license.label}">
+						<h:outputText value="#{license.label}" />
+					</p:column>
+
+					<p:column headerText="Effective Date" width="20%"
+						sortBy="#{license.effectiveDate}">
+						<h:outputText value="#{license.effectiveDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy"></f:convertDateTime>
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Expiry Date" width="20%"
+						sortBy="#{license.expiration}">
+						<h:outputText value="#{license.expiration}" />
+					</p:column>
+				</p:dataTable>
+				<p:separator></p:separator>
+				<p:dataTable var="user" style="width:100%"
+					value="#{manageProjectBean.userByProjectLazyList}" paginator="true"
+					paginatorAlwaysVisible="true" rows="10" resizableColumns="true"
+					paginatorPosition="bottom" sortBy="#{user.aduser}"
+					rowKey="#{user.aduser}" id="user-list-table" lazy="true">
+					<f:facet name="header">
+            					Members
+        					</f:facet>
+					<p:column headerText="Account" width="30%"
+						filterBy="#{user.aduser}" sortBy="#{user.aduser}">
+						<p:commandLink
+							action="#{manageProjectBean.getUserDetails(user.aduser)}">
+							<h:outputText value="#{user.aduser}" />
+						</p:commandLink>
+					</p:column>
+					<p:column headerText="Display Name" width="30%"
+						filterBy="#{user.displayName}" sortBy="#{user.displayName}">
+						<h:outputText value="#{user.displayName}" />
+					</p:column>
+
+					<p:column headerText="Email" width="40%" filterBy="#{user.email}"
+						sortBy="#{user.email}">
+						<h:outputText value="#{user.email}" />
+					</p:column>
+				</p:dataTable>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

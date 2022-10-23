@@ -1,0 +1,678 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Manage Licenses" styleClass="page-title"></h:outputText>
+		<p:separator />
+		<h:form id="license-form">
+			<p:toolbar styleClass="data-toolbar" id="license-toolbar">
+				<f:facet name="left">
+					<p:commandButton type="button" value="New" icon="ui-icon-document"
+						onclick="PF('create-new-dialog').show();"
+						update=":create-new-form:create-new-dialog"
+						styleClass="button-with-border-top-left" />
+					<!-- <p:commandButton type="button" value="Activate"
+						onclick="PF('activate-dialog').show();" icon="ui-icon-power"
+						update=":activate-license-form:activate-dialog"
+						disabled="#{manageLicenseBean.disableDelete || manageLicenseBean.showDeactivation == 0}"
+						id="activate-button" />
+					<p:commandButton type="button" value="Deactivate"
+						onclick="PF('deactivate-dialog').show();" icon="ui-icon-cancel"
+						update=":deactivate-license-form:deactivate-dialog"
+						disabled="#{manageLicenseBean.disableDelete || manageLicenseBean.showDeactivation == 1}"
+						id="deactivate-button" />
+					<p:commandButton type="button" value="Delete"
+						onclick="PF('delete-dialog').show();" icon="ui-icon-trash"
+						update=":delete-license-form:delete-dialog"
+						disabled="#{manageLicenseBean.disableDelete}" id="delete-button" /> -->
+					<!-- <p:commandButton type="button" value="Import"
+						icon="ui-icon-arrowthickstop-1-s"
+						onclick="PF('import-license').show();" />
+					<p:commandButton value="Export" type="button"
+						onclick="PF('export-license').show();"
+						icon="ui-icon-arrowthickstop-1-n"
+						styleClass="button-with-border-top-right" disabled="false">
+					</p:commandButton> -->
+				</f:facet>
+				<f:facet name="right">
+					<p:selectOneButton value="#{manageLicenseBean.showDeactivation}"
+						styleClass="one-button-toolbar">
+						<f:selectItem
+							itemLabel="Active (#{manageLicenseBean.activeCount})"
+							itemValue="0" id="active" />
+						<f:selectItem
+							itemLabel="Inactive (#{manageLicenseBean.inactiveCount})"
+							itemValue="1" id="inactive" />
+						<p:ajax event="change"
+							listener="#{manageLicenseBean.toggleDeactivation}"
+							update=":license-form:license-table :license-form:license-toolbar" />
+					</p:selectOneButton>
+				</f:facet>
+			</p:toolbar>
+
+
+
+			<p:messages showDetail="true" autoUpdate="true" closable="true"
+				globalOnly="true" severity="info, warn" />
+
+			<p:dataTable var="license"
+				value="#{manageLicenseBean.licenseLazyList}" paginator="true"
+				paginatorAlwaysVisible="true" rows="30" lazy="true"
+				paginatorPosition="bottom" resizableColumns="true"
+				selection="#{manageLicenseBean.selectedLicenses}"
+				rowKey="#{license.name}" id="license-table"
+				style="margin-top:0px !important" sortBy="#{license.name}"
+				disabledSelection="#{manageLicenseBean.disableSelectFor(license.label)}"
+				rowsPerPageTemplate="10, 30, 50, 100, 500, 1000">
+				<f:facet name="header">
+            		Licenses
+        		</f:facet>
+				<p:ajax listener="#{manageLicenseBean.onRowSelect}"
+					event="rowSelectCheckbox" update=":license-form:license-toolbar" />
+				<p:ajax listener="#{manageLicenseBean.onRowUnselect}"
+					event="rowUnselectCheckbox" update=":license-form:license-toolbar" />
+				<p:ajax event="toggleSelect" update=":license-form:license-toolbar"
+					listener="#{manageLicenseBean.onToggleSelect}" />
+				<p:ajax event="filter" update=":license-form:license-table"
+					listener="#{manageLicenseBean.onFilter}" />
+
+				<p:column selectionMode="multiple" style="text-align:center"
+					width="4%" />
+
+				<p:column headerText="License" width="15%"
+					filterBy="#{license.name}" sortBy="#{license.name}">
+					<h:outputText value="#{license.name}" />
+				</p:column>
+				<p:column headerText="Data Set" width="25%"
+					filterBy="#{license.label}" sortBy="#{license.label}">
+					<h:outputText value="#{license.label}" />
+				</p:column>
+
+				<p:column headerText="Parties" width="20%">
+					<h:outputText value="#{license.parties}" />
+				</p:column>
+
+				<p:column headerText="Effective Date" width="8%"
+					sortBy="#{license.effectiveDate}">
+					<h:outputText value="#{license.effectiveDate}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Expiration" width="8%"
+					sortBy="#{license.expiration}">
+					<h:outputText value="#{license.expiration}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Group" width="5%"
+					sortBy="#{license.groupEnabled}">
+					<h:outputText value="No" rendered="#{license.groupEnabled == 0}" />
+					<h:outputText value="Yes" rendered="#{license.groupEnabled == 1}" />
+				</p:column>
+
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="View">
+					<p:commandButton icon="ui-icon-search"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageLicenseBean.getLicenseDetails}"
+						update=":license-detail-form:view-license" onclick="loading();"
+						onsuccess="doneLoading();">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="50" style="text-align:center !important"
+					headerText="Edit">
+					<p:commandButton icon="ui-icon-pencil"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageLicenseBean.getEditLicense}"
+						oncomplete="PF('edit-license').show();"
+						update=":edit-form:edit-license"
+						disabled="#{manageLicenseBean.disableSelectFor(license.label)}">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="Bulk"
+					rendered="#{manageLicenseBean.showDeactivation == 0}">
+					<p:commandButton icon="ui-icon-tag"
+						styleClass="button-with-border button-in-grid"
+						oncomplete="PF('bulk-update-dialog').show();"
+						action="#{manageLicenseBean.getLicenseForBulkUpdate}"
+						update=":bulk-update-license-form:bulk-update-dialog"
+						disabled="#{manageLicenseBean.disableSelectFor(license.label)}">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="DEACT"
+					rendered="#{manageLicenseBean.showDeactivation == 0}">
+					<p:commandButton icon="ui-icon-cancel"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageLicenseBean.getEditLicense}"
+						oncomplete="PF('deactivate-dialog').show();"
+						update=":deactivate-license-form:deactivate-dialog"
+						disabled="#{manageLicenseBean.disableSelectFor(license.label)}">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="ACT"
+					rendered="#{manageLicenseBean.showDeactivation == 1}">
+					<p:commandButton icon="ui-icon-power"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageLicenseBean.getEditLicense}"
+						oncomplete="PF('activate-dialog').show();"
+						update=":activate-license-form:activate-dialog"
+						disabled="#{manageLicenseBean.disableSelectFor(license.label)}">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+
+				<p:column width="50" style="text-align:center !important"
+					headerText="DEL"
+					rendered="#{manageLicenseBean.showDeactivation == 1}">
+					<p:commandButton icon="ui-icon-trash"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageLicenseBean.getEditLicense}"
+						oncomplete="PF('delete-dialog').show();"
+						update=":delete-license-form:delete-dialog"
+						disabled="#{manageLicenseBean.disableSelectFor(license.label)}">
+						<f:setPropertyActionListener value="#{license.name}"
+							target="#{manageLicenseBean.selectedLicenseValue}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+
+		</h:form>
+
+		<h:form id="create-new-form">
+			<p:dialog header="Register New License" widgetVar="create-new-dialog"
+				modal="true" closeOnEscape="true" width="auto"
+				id="create-new-dialog" resizable="false">
+				<h:panelGrid columns="3" cellspacing="7" styleClass="dialog-grid"
+					id="create-new-dialog-grid">
+					<p:outputLabel for="license-new-value" value="Name" />
+					<p:inputText value="#{manageLicenseBean.newLicense.name}"
+						required="true" id="license-new-value" maxlength="200">
+						<p:ajax event="change"
+							listener="#{manageLicenseBean.dummyListener}" />
+					</p:inputText>
+					<p:message for="license-new-value" display="tooltip" />
+
+					<p:outputLabel for="license-confirmed-value" value="Retype Name" />
+					<p:inputText value="#{manageLicenseBean.confirmedNewLicenseName}"
+						required="true" id="license-confirmed-value" maxlength="200"></p:inputText>
+					<p:message for="license-confirmed-value" display="tooltip" />
+
+					<p:outputLabel for="license-new-category" value="Data Set" />
+					<p:selectOneMenu id="license-new-category"
+						value="#{manageLicenseBean.newLicense.label}" required="true">
+						<f:selectItem itemLabel="Select One" itemValue="" />
+						<f:selectItems value="#{userSessionBean.authorizedAttributeLabel}" />
+					</p:selectOneMenu>
+					<p:message for="license-new-category" display="tooltip" />
+
+					<p:outputLabel value="Parties" />
+					<p:inputTextarea value="#{manageLicenseBean.newLicense.parties}"
+						autoResize="false" maxlength="1000"></p:inputTextarea>
+					<h:outputText></h:outputText>
+
+					<p:outputLabel value="Projects" />
+					<p:autoComplete multiple="true"
+						value="#{manageLicenseBean.inputProjectsForLicense}"
+						id="user-by-project-input" size="1"
+						completeMethod="#{manageLicenseBean.autoCompleteForLicenseProjectInput}"
+						var="project" itemLabel="#{project}" itemValue="#{project}"
+						forceSelection="true" styleClass="autocomplete-multiple-short">
+						<p:ajax event="itemSelect"
+							listener="#{manageLicenseBean.onProjectForLicenseSelect}" />
+						<p:ajax event="itemUnselect"
+							listener="#{manageLicenseBean.onProjectForLicenseUnselect}" />
+					</p:autoComplete>
+					<h:outputText></h:outputText>
+
+					<p:outputLabel value="Effective Date" />
+					<p:calendar value="#{manageLicenseBean.newEffectiveDate}"></p:calendar>
+					<h:outputText></h:outputText>
+
+					<p:outputLabel value="Expired Date" />
+					<p:calendar value="#{manageLicenseBean.newExpiredDate}"></p:calendar>
+					<h:outputText></h:outputText>
+
+					<p:outputLabel value="Enable License Group" />
+					<h:panelGrid id="new-group-enabled-grid" columns="1"
+						cellpadding="0">
+						<p:selectBooleanCheckbox
+							value="#{manageLicenseBean.newLicenseGroupEnabled}">
+							<p:ajax event="change"
+								listener="#{manageLicenseBean.populateNewGroupName}"
+								update=":create-new-form:new-group-name-grid new-group-name-label"></p:ajax>
+						</p:selectBooleanCheckbox>
+					</h:panelGrid>
+					<h:outputText />
+
+					<h:panelGrid id="new-group-name-label">
+						<p:outputLabel value="License Group Name" for="new-group-name"
+							rendered="#{manageLicenseBean.newLicenseGroupEnabled}" />
+					</h:panelGrid>
+					<h:panelGrid id="new-group-name-grid" columns="1" cellpadding="0">
+						<p:inputText value="#{manageLicenseBean.newLicense.groupName}"
+							id="new-group-name" maxlength="200"
+							required="#{manageLicenseBean.newLicenseGroupEnabled}"
+							rendered="#{manageLicenseBean.newLicenseGroupEnabled}">
+							<f:validateRegex pattern="^[a-zA-Z0-9 -]+$" />
+						</p:inputText>
+					</h:panelGrid>
+					<h:outputText />
+				</h:panelGrid>
+				<p:commandButton value="Create"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageLicenseBean.createNewLicense}"
+					id="license-new-button" onclick="loading();"
+					oncomplete="doneLoading();"
+					update=":license-form:license-table create-new-dialog-grid create-new-msg :license-form:license-toolbar"></p:commandButton>
+				<p:messages showDetail="true" autoUpdate="true" closable="true"
+					severity="error" for="create-new-form" id="create-new-msg" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="edit-form">
+			<p:dialog header="Update License Details" widgetVar="edit-license"
+				modal="true" closeOnEscape="true" width="auto" id="edit-license"
+				resizable="false">
+				<h:panelGrid columns="2" cellspacing="7" styleClass="dialog-grid"
+					id="edit-license-dialog-grid">
+					<p:outputLabel value="Name" />
+					<p:outputLabel value="#{manageLicenseBean.selectedLicense.name}" />
+
+					<p:outputLabel value="Data Set" />
+					<p:outputLabel value="#{manageLicenseBean.selectedLicense.label}" />
+
+					<p:outputLabel value="Parties" />
+					<p:inputTextarea
+						value="#{manageLicenseBean.selectedLicense.parties}"
+						autoResize="false"></p:inputTextarea>
+
+					<p:outputLabel value="Projects" />
+					<p:autoComplete multiple="true"
+						value="#{manageLicenseBean.inputProjectsForLicense}"
+						id="user-by-project-input" size="1"
+						completeMethod="#{manageLicenseBean.autoCompleteForLicenseProjectInput}"
+						var="project" itemLabel="#{project}" itemValue="#{project}"
+						forceSelection="true" styleClass="autocomplete-multiple-short">
+						<p:ajax event="itemSelect"
+							listener="#{manageLicenseBean.onProjectForLicenseSelect}" />
+						<p:ajax event="itemUnselect"
+							listener="#{manageLicenseBean.onProjectForLicenseUnselect}" />
+					</p:autoComplete>
+
+					<p:outputLabel value="Effective Date" />
+					<p:calendar value="#{manageLicenseBean.newEffectiveDate}"
+						timeZone="#{newEffectiveDate.timeZone}"></p:calendar>
+
+					<p:outputLabel value="Expired Date" />
+					<p:calendar value="#{manageLicenseBean.newExpiredDate}"></p:calendar>
+
+					<p:outputLabel value="Enable License Group" />
+					<h:panelGrid id="edit-group-enabled-grid" columns="1"
+						cellpadding="0">
+						<p:selectBooleanCheckbox
+							value="#{manageLicenseBean.editLicenseGroupEnabled}">
+							<p:ajax event="change"
+								listener="#{manageLicenseBean.populateEditGroupName}"
+								update=":edit-form:edit-group-name-grid edit-group-name-label"></p:ajax>
+						</p:selectBooleanCheckbox>
+					</h:panelGrid>
+
+					<h:panelGrid id="edit-group-name-label">
+						<p:outputLabel value="License Group Name" for="edit-group-name"
+							rendered="#{manageLicenseBean.editLicenseGroupEnabled}" />
+					</h:panelGrid>
+					<h:panelGrid id="edit-group-name-grid" columns="1" cellpadding="0">
+						<p:inputText
+							value="#{manageLicenseBean.selectedLicense.groupName}"
+							id="edit-group-name" maxlength="200"
+							validatorMessage="License group name can only contain words, numbers, space and '-' characters"
+							required="#{manageLicenseBean.editLicenseGroupEnabled}"
+							rendered="#{manageLicenseBean.editLicenseGroupEnabled}"
+							disabled="#{manageLicenseBean.editGroupNameDisabled}">
+							<f:validateRegex pattern="^[a-zA-Z0-9 -_]+$" />
+						</p:inputText>
+					</h:panelGrid>
+
+				</h:panelGrid>
+				<p:commandButton value="Update"
+					styleClass="dialog-button-single button-with-border"
+					action="#{manageLicenseBean.updateLicense}"
+					id="license-update-button" onclick="loading();"
+					oncomplete="doneLoading();"
+					update=":license-form:license-table edit-license-dialog-grid"></p:commandButton>
+				<p:messages showDetail="true" autoUpdate="true" closable="true"
+					for="edit-form" severity="error" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="license-detail-form">
+			<p:dialog
+				header="View License Information - #{manageLicenseBean.selectedLicense.name}"
+				widgetVar="view-license" modal="true" closeOnEscape="true"
+				id="view-license" resizable="false" width="72%"
+				styleClass="wide-dialog" dynamic="false">
+				<h:panelGrid columns="2" width="100%"
+					style="vertical-align:top !important">
+					<h:panelGrid columns="2" cellspacing="7" width="96%"
+						style="margin-left:2% !important; margin-right:2% !important;">
+						<h:outputText value="Value" styleClass="output-label"></h:outputText>
+						<h:outputText value="#{manageLicenseBean.selectedLicense.name}"></h:outputText>
+
+						<h:outputText value="Category" styleClass="output-label"></h:outputText>
+						<h:outputText value="#{manageLicenseBean.selectedLicense.label}"></h:outputText>
+
+						<h:outputText value="Parties" styleClass="output-label"></h:outputText>
+						<h:outputText value="#{manageLicenseBean.selectedLicense.parties}"></h:outputText>
+
+						<h:outputText value="Effective" styleClass="output-label"></h:outputText>
+						<h:outputText
+							value="#{manageLicenseBean.selectedLicense.effectiveDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputText>
+
+						<h:outputText value="Expired" styleClass="output-label"></h:outputText>
+						<h:outputText
+							value="#{manageLicenseBean.selectedLicense.expiration}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputText>
+					</h:panelGrid>
+					<h:panelGrid columns="1" style="width:100%; border:none !important">
+						<h:outputText value="Project" styleClass="output-label" />
+						<p:dataGrid var="project" columns="2" styleClass="grid-table"
+							style="width:100%; border:none !important"
+							value="#{manageLicenseBean.selectedLicenseProjects}"
+							paginator="false" sortBy="#{project}" rowKey="#{project}"
+							id="project-list-table" itemType="none">
+							<h:outputText value="#{project}" />
+						</p:dataGrid>
+					</h:panelGrid>
+				</h:panelGrid>
+				<p:separator />
+				<p:dataTable var="user" style="width:100%" lazy="true"
+					value="#{manageLicenseBean.userByLicenseLazyList}" paginator="true"
+					paginatorAlwaysVisible="true" rows="10" resizableColumns="true"
+					paginatorPosition="bottom" sortBy="#{user.aduser}"
+					rowKey="#{user.aduser}" id="user-list-table">
+					<f:facet name="header">
+            					Users
+        					</f:facet>
+					<p:column headerText="Account" width="30%"
+						filterBy="#{user.aduser}" sortBy="#{user.aduser}">
+						<p:commandLink
+							action="#{manageLicenseBean.getUserDetails(user.aduser)}">
+							<h:outputText value="#{user.aduser}" />
+						</p:commandLink>
+					</p:column>
+					<p:column headerText="Display Name" width="30%"
+						filterBy="#{user.displayName}" sortBy="#{user.displayName}">
+						<h:outputText value="#{user.displayName}" />
+					</p:column>
+
+					<p:column headerText="Email" width="40%" filterBy="#{user.email}"
+						sortBy="#{user.email}">
+						<h:outputText value="#{user.email}" />
+					</p:column>
+				</p:dataTable>
+
+			</p:dialog>
+		</h:form>
+
+		<h:form id="delete-license-form">
+			<p:dialog
+				header="Delete License - #{manageLicenseBean.selectedLicense.name}"
+				widgetVar="delete-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="delete-dialog" resizable="false">
+				<h:panelGrid columns="1" width="100%">
+					<h:outputText value="Confirm Deletion" />
+				</h:panelGrid>
+				<h:panelGrid columns="3" width="100%" style="margin-top:30px"
+					styleClass="dialog-button-grid">
+					<p:commandButton value="Delete"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageLicenseBean.deleteLicense}"
+						id="license-delete-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":license-form:license-table :license-form:license-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-multiple button-with-border"
+						type="button" onclick="PF('delete-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="deactivate-license-form">
+			<p:dialog
+				header="Deactivate License - #{manageLicenseBean.selectedLicense.name}"
+				widgetVar="deactivate-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="deactivate-dialog" resizable="false">
+				<h:panelGrid columns="1" width="100%">
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('LICENSE_DEACTIVATE_HELPER1')}" />
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('LICENSE_DEACTIVATE_HELPER2')}" />
+				</h:panelGrid>
+				<h:panelGrid columns="2" width="100%" style="margin-top:30px"
+					styleClass="dialog-button-grid">
+					<p:commandButton value="Deactivate" onclick="loading();"
+						oncomplete="doneLoading();"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageLicenseBean.deactivateLicense}"
+						id="license-deactivate-button"
+						update=":license-form:license-table :license-form:license-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-multiple button-with-border"
+						type="button" onclick="PF('deactivate-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="activate-license-form">
+			<p:dialog
+				header="Activate License - #{manageLicenseBean.selectedLicense.name}"
+				widgetVar="activate-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="activate-dialog" resizable="false">
+				<h:outputText value="Confirm Activation" />
+				<h:panelGrid columns="2" width="100%" style="margin-top:30px">
+					<p:commandButton value="Activate"
+						styleClass="dialog-button-single button-with-border"
+						action="#{manageLicenseBean.activateLicense}"
+						id="license-activate-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":license-form:license-table :license-form:license-toolbar"></p:commandButton>
+					<p:commandButton value="Cancel"
+						styleClass="dialog-button-single button-with-border" type="button"
+						onclick="PF('activate-dialog').hide();"></p:commandButton>
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="bulk-update-license-form">
+			<p:dialog
+				header="Assign/Remove License - #{manageLicenseBean.selectedLicense.name}"
+				widgetVar="bulk-update-dialog" modal="true" closeOnEscape="true"
+				width="auto" id="bulk-update-dialog" resizable="false">
+				<h:panelGrid columns="1" id="bulk-context-grid"
+					styleClass="bulk-context-grid">
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('LICENSE_BULK_HELPER1')}"
+						styleClass="context-helper"
+						rendered="#{manageLicenseBean.bulkAction == 'assign'}" />
+
+					<h:outputText
+						value="#{userSessionBean.getContextHelper('LICENSE_BULK_HELPER2')}"
+						styleClass="context-helper"
+						rendered="#{manageLicenseBean.bulkAction == 'remove'}" />
+				</h:panelGrid>
+
+				<h:panelGrid columns="2" cellpadding="7" id="bulk-update-grid">
+					<h:outputText value="Action"></h:outputText>
+					<p:selectOneMenu value="#{manageLicenseBean.bulkAction}"
+						id="bulk-action">
+						<f:selectItem itemLabel="Assign" itemValue="assign" />
+						<f:selectItem itemLabel="Remove" itemValue="remove" />
+						<p:ajax event="change"
+							update=":bulk-update-license-form:bulk-update-grid :bulk-update-license-form:bulk-button-grid :bulk-update-license-form:bulk-context-grid"
+							listener="#{manageLicenseBean.changeActionListener}"></p:ajax>
+					</p:selectOneMenu>
+
+					<h:outputText value="Target"></h:outputText>
+					<p:selectOneMenu value="#{manageLicenseBean.inputMethod}"
+						id="input-method">
+						<f:selectItem itemLabel="Users" itemValue="users" />
+						<f:selectItem itemLabel="Users By Project"
+							itemValue="users-by-project" />
+						<p:ajax event="change"
+							update=":bulk-update-license-form:bulk-update-grid"></p:ajax>
+					</p:selectOneMenu>
+
+					<h:outputText value="Users"
+						rendered="#{manageLicenseBean.inputMethod == 'users'}"></h:outputText>
+					<p:autoComplete multiple="true"
+						value="#{manageLicenseBean.inputUsers}" id="user-input"
+						completeMethod="#{manageLicenseBean.autoCompleteForUserInput}"
+						var="user" itemLabel="#{user}" itemValue="#{user}"
+						forceSelection="true"
+						rendered="#{manageLicenseBean.inputMethod == 'users'}">
+						<p:ajax event="itemSelect"
+							listener="#{manageLicenseBean.onUserSelect}" />
+						<p:ajax event="itemUnselect"
+							listener="#{manageLicenseBean.onUserUnselect}" />
+					</p:autoComplete>
+
+					<h:outputText value="Project"
+						rendered="#{manageLicenseBean.inputMethod == 'users-by-project'}"></h:outputText>
+					<p:autoComplete multiple="true"
+						value="#{manageLicenseBean.inputProjects}"
+						id="user-by-project-input"
+						completeMethod="#{manageLicenseBean.autoCompleteForProjectInput}"
+						var="project" itemLabel="#{project}" itemValue="#{project}"
+						forceSelection="true"
+						rendered="#{manageLicenseBean.inputMethod == 'users-by-project'}">
+						<p:ajax event="itemSelect"
+							listener="#{manageLicenseBean.onProjectSelect}" />
+						<p:ajax event="itemUnselect"
+							listener="#{manageLicenseBean.onProjectUnselect}" />
+					</p:autoComplete>
+				</h:panelGrid>
+
+				<h:panelGrid columns="1" id="bulk-button-grid" style="width:100%">
+					<p:commandButton value="Assign"
+						styleClass="dialog-button-single button-with-border"
+						action="#{manageLicenseBean.bulkGrantRetractLicense}"
+						id="license-assign-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":license-form:license-table :bulk-update-license-form:bulk-update-grid bulk-update-msg"
+						rendered="#{manageLicenseBean.bulkAction == 'assign'}"></p:commandButton>
+
+					<p:commandButton value="Remove"
+						styleClass="dialog-button-single button-with-border"
+						action="#{manageLicenseBean.bulkGrantRetractLicense}"
+						id="license-remove-button" onclick="loading();"
+						oncomplete="doneLoading();"
+						update=":license-form:license-table :bulk-update-license-form:bulk-update-grid bulk-update-msg"
+						rendered="#{manageLicenseBean.bulkAction == 'remove'}"></p:commandButton>
+				</h:panelGrid>
+				<p:messages showDetail="true" closable="true" severity="error"
+					for="bulk-update-license-form" id="bulk-update-msg" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="export-form">
+			<p:dialog header="Export Licenses" widgetVar="export-license"
+				modal="true" closeOnEscape="true" id="export-license"
+				resizable="false" width="30%" styleClass="wide-dialog">
+				<h:panelGrid columns="2">
+					<h:outputText value="Export as " />
+					<p:selectOneRadio value="#{manageLicenseBean.exportFileType}">
+						<f:selectItem itemLabel="CSV" itemValue="csv" />
+						<f:selectItem itemLabel="SQL" itemValue="sql" />
+					</p:selectOneRadio>
+				</h:panelGrid>
+				<p:dataTable var="col" style="width:100%" rowKey="#{col}"
+					value="#{manageLicenseBean.columnNames}" paginator="true"
+					paginatorAlwaysVisible="true" rows="10" resizableColumns="true"
+					paginatorPosition="bottom" id="export-column"
+					selection="#{manageLicenseBean.selectedColumns}">
+					<p:ajax event="rowSelectCheckbox"
+						update=":export-form:export-button" />
+					<p:ajax event="rowUnselectCheckbox"
+						update=":export-form:export-button" />
+					<p:ajax event="toggleSelect" update=":export-form:export-button" />
+					<f:facet name="header">
+            					Export Columns
+        					</f:facet>
+					<p:column selectionMode="multiple" style="text-align:center"
+						width="2%" />
+					<p:column headerText="Name" width="98%">
+						<h:outputText value="#{col}" />
+					</p:column>
+				</p:dataTable>
+				<p:commandButton value="Export" ajax="false"
+					actionListener="#{manageLicenseBean.handleExport}"
+					styleClass="dialog-button-single button-with-border"
+					disabled="#{manageLicenseBean.selectedColumns.size() == 0}"
+					onclick="PF('export-license').hide();" id="export-button">
+					<p:fileDownload value="#{manageLicenseBean.exportFile}"></p:fileDownload>
+				</p:commandButton>
+			</p:dialog>
+		</h:form>
+
+		<h:form id="import-form" enctype="multipart/form-data">
+			<p:dialog header="Import Licenses" widgetVar="import-license"
+				modal="true" closeOnEscape="true" id="import-license"
+				resizable="false" width="30%">
+				<h:panelGrid columns="2">
+					<h:outputText value="Import as " />
+					<p:selectOneRadio value="#{manageLicenseBean.importFileType}">
+						<f:selectItem itemLabel="CSV" itemValue="csv" />
+						<f:selectItem itemLabel="SQL" itemValue="sql" />
+					</p:selectOneRadio>
+				</h:panelGrid>
+
+				<p:fileUpload fileUploadListener="#{manageLicenseBean.uploadFile}"
+					mode="advanced" dragDropSupport="true" update="import-msg">
+				</p:fileUpload>
+
+				<p:commandButton value="Import" ajax="false"
+					actionListener="#{manageLicenseBean.handleImport}"
+					styleClass="dialog-button-single button-with-border"
+					id="import-button" update="import-msg :license-form:license-table" />
+
+				<p:messages showDetail="true" closable="true" for="import-form"
+					id="import-msg" />
+			</p:dialog>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

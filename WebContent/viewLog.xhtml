@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:form id="log-form">
+			<h:outputText value="View Log" styleClass="page-title"></h:outputText>
+			<p:separator />
+			<p:toolbar styleClass="data-toolbar" id="license-toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Export" type="button"
+						onclick="PF('export-log').show();"
+						icon="ui-icon-arrowthickstop-1-n"
+						styleClass="button-with-border-top-right button-with-border-top-left"
+						disabled="false">
+					</p:commandButton>
+				</f:facet>
+			</p:toolbar>
+			<p:dataTable var="logg" value="#{manageLogBean.allLogs}"
+				paginator="true" paginatorAlwaysVisible="true" rows="30"
+				paginatorPosition="bottom" resizableColumns="true"
+				rowKey="#{logg.time}" id="log-table" lazy="true"
+				sortBy="#{logg.time}" sortOrder="descending"
+				style="margin-top:0px !important">
+				<f:facet name="header">
+            	Logs
+        	</f:facet>
+				<p:ajax event="filter" listener="#{manageLogBean.onLogFilter}" />
+
+
+				<p:column width="2%">
+					<p:rowToggler />
+				</p:column>
+				<p:column headerText="Time" width="19%" sortBy="#{logg.time}">
+					<h:outputText value="#{logg.time}" />
+				</p:column>
+				<p:column headerText="Admin" width="19%" filterBy="#{logg.admin}"
+					sortBy="#{logg.admin}">
+					<h:outputText value="#{logg.admin}" />
+				</p:column>
+				<p:column headerText="Target user" width="19%"
+					filterBy="#{logg.targetUser}" sortBy="#{logg.targetUser}">
+					<h:outputText value="#{logg.targetUser}" />
+				</p:column>
+				<p:column headerText="Action" width="19%" filterBy="#{logg.action}"
+					sortBy="#{logg.action}">
+					<h:outputText value="#{logg.action}" />
+				</p:column>
+				<p:column headerText="Attribute" width="19%"
+					filterBy="#{logg.attribute}" sortBy="#{logg.attribute}">
+					<h:outputText value="#{logg.attribute}" />
+				</p:column>
+
+				<p:rowExpansion styleClass="row-expansion">
+					<p:panelGrid columns="2"
+						columnClasses="expand-column1, expand-column2"
+						styleClass="expand-grid">
+						<h:outputText value="Attribute Value"></h:outputText>
+						<h:outputText value="#{logg.newValue}"></h:outputText>
+
+						<h:outputText value="Trigger"></h:outputText>
+						<h:outputText value="#{logg.trigger}"></h:outputText>
+					</p:panelGrid>
+				</p:rowExpansion>
+			</p:dataTable>
+		</h:form>
+
+		<h:form id="export-form">
+			<p:dialog header="Export Logs" widgetVar="export-log" modal="true"
+				closeOnEscape="true" id="export-log" resizable="false" width="30%"
+				styleClass="wide-dialog">
+				<h:panelGrid columns="2">
+					<h:outputText value="Export as " />
+					<p:selectOneRadio value="#{manageLogBean.exportFileType}">
+						<f:selectItem itemLabel="CSV" itemValue="csv" />
+						<f:selectItem itemLabel="PDF" itemValue="pdf" />
+					</p:selectOneRadio>
+				</h:panelGrid>
+				<p:dataTable var="col" style="width:100%" rowKey="#{col}"
+					value="#{manageLogBean.columnNames}" paginator="true"
+					paginatorAlwaysVisible="false" rows="10" resizableColumns="true"
+					paginatorPosition="bottom" id="export-column"
+					selection="#{manageLogBean.selectedColumns}">
+					<p:ajax event="rowSelectCheckbox"
+						update=":export-form:export-button" />
+					<p:ajax event="rowUnselectCheckbox"
+						update=":export-form:export-button" />
+					<p:ajax event="toggleSelect" update=":export-form:export-button" />
+					<f:facet name="header">
+            					Export Columns
+        					</f:facet>
+					<p:column selectionMode="multiple" style="text-align:center"
+						width="2%" />
+					<p:column headerText="Name" width="98%">
+						<h:outputText value="#{col}" />
+					</p:column>
+				</p:dataTable>
+				<p:commandButton value="Export" ajax="false"
+					actionListener="#{manageLogBean.handleExport}"
+					styleClass="dialog-button-single button-with-border"
+					disabled="#{manageLogBean.selectedColumns.size() == 0}"
+					oncomplete="PF('export-log').hide();" id="export-button">
+					<p:fileDownload value="#{manageLogBean.exportFile}"></p:fileDownload>
+				</p:commandButton>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

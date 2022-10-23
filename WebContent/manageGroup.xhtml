@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Manage Groups" styleClass="page-title"></h:outputText>
+		<p:separator />
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" globalOnly="true" />
+		<h:form id="search-form" style="margin-bottom:2% !important;">
+
+			<h:panelGrid columns="3" cellspacing="7">
+				<h:outputText value="Group Name"></h:outputText>
+				<p:autoComplete value="#{manageGroupBean.searchInput}"
+					forceSelection="true"
+					completeMethod="#{manageGroupBean.getSuggestedInput}">
+				</p:autoComplete>
+				<p:commandButton value="Get Members" ajax="false"
+					actionListener="#{manageGroupBean.getMembership}"
+					update=":user-form" styleClass="button-with-border"
+					icon="ui-icon-person" onclick="loading();">
+					<f:setPropertyActionListener
+						target="#{userSessionBean.displaySearchListFlag}" value="true"></f:setPropertyActionListener>
+					<f:setPropertyActionListener
+						target="#{userSessionBean.lastMembers}"
+						value="#{manageGroupBean.members}"></f:setPropertyActionListener>
+
+					<f:setPropertyActionListener
+						target="#{userSessionBean.lastSearchGroup}"
+						value="#{manageGroupBean.searchInput}"></f:setPropertyActionListener>
+				</p:commandButton>
+			</h:panelGrid>
+
+		</h:form>
+
+		<p:separator />
+		<h:outputText
+			value="Number of members: &lt;strong&gt;&lt;font size='5'&gt;#{manageGroupBean.members.size()}&lt;/font&gt;&lt;/strong&gt;"
+			styleClass="page-subtitle" escape="false"
+			rendered="#{manageGroupBean.displayResult}"></h:outputText>
+
+		<h:form id="user-form" rendered="#{manageGroupBean.displayResult}"
+			style="margin-top:1% !important">
+
+
+			<p:dataGrid var="user" value="#{manageGroupBean.members}"
+				paginator="true" paginatorAlwaysVisible="true" rows="30"
+				paginatorPosition="bottom" rowKey="#{user}" id="user-table"
+				rowsPerPageTemplate="30,50,100, 500, 1000" columns="4"
+				styleClass="grid-table" style = "nargin-bottom:2%;">
+				<f:facet name="header">
+					Members
+				</f:facet>
+				<p:commandLink action="#{manageGroupBean.getUserDetails(user)}">
+					<h:outputText value="#{user}" />
+				</p:commandLink>
+			</p:dataGrid>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

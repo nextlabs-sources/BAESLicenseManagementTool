@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Manage Users" styleClass="page-title"></h:outputText>
+		<p:separator />
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" globalOnly="true"/>
+		<h:form id="search-form" style="margin-bottom:2% !important;">
+			<h:panelGrid columns="1">
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SEARCH_USER_HELPER1')}"></h:outputText>
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SEARCH_USER_HELPER2')}"></h:outputText>
+			</h:panelGrid>
+			<p:dataGrid var="field" id="search-input-panel"
+				value="#{manageUserBean.searchFields}" columns="2" layout="grid"
+				styleClass="search-input-grid">
+
+				<f:facet name="header">
+				Search Inputs
+				</f:facet>
+				<h:panelGrid styleClass="search-grid" columns="3"
+					columnClasses="search-grid1, search-grid2, search-grid3">
+					<h:outputText
+						value="#{userSessionBean.searchFieldsAttributeLabelMap.get(field.element0)}"></h:outputText>
+					<p:selectBooleanButton value="#{field.operator}" onLabel="or"
+						offLabel="and" style="float:right"
+						styleClass="search-operator-button button-with-border"
+						rendered="#{field.isProject}">
+					</p:selectBooleanButton>
+					<p:commandButton value="or"
+						style="background: #777777 !important; border:0px !important;"
+						rendered="#{!field.isProject}" disabled="true"
+						styleClass="button-with-border search-operator-button" />
+					<p:autoComplete value="#{field.inputs}" style="float:right"
+						multiple="true" forceSelection="true"
+						completeMethod="#{manageUserBean.getSuggestedInput}"
+						styleClass="autocomplete-multiple-short1">
+						<f:attribute name="attribute" value="#{field.element0}" />
+					</p:autoComplete>
+				</h:panelGrid>
+			</p:dataGrid>
+
+			<p:commandButton value="Search Users" ajax="false"
+				actionListener="#{manageUserBean.searchUser}" update=":user-form"
+				styleClass="button-with-border" icon="ui-icon-person"
+				onclick="loading();">
+				<f:setPropertyActionListener
+					target="#{userSessionBean.displaySearchListFlag}" value="true"></f:setPropertyActionListener>
+				<!-- <f:setPropertyActionListener
+					target="#{userSessionBean.lastSearchResult}"
+					value="#{manageUserBean.resultList}"></f:setPropertyActionListener> -->
+
+				<f:setPropertyActionListener
+					target="#{userSessionBean.searchFields}"
+					value="#{manageUserBean.searchFields}"></f:setPropertyActionListener>
+			</p:commandButton>
+
+
+
+			<h:outputText
+				value="Search returns &lt;strong&gt;&lt;font size='5'&gt;#{manageUserBean.resultList.size()}&lt;/font&gt;&lt;/strong&gt; results"
+				styleClass="page-subtitle" escape="false"
+				style="float:right;margin-right:5px;margin-top:10px"
+				rendered="#{userSessionBean.displaySearchListFlag}"></h:outputText>
+
+		</h:form>
+
+		<p:separator />
+
+		<h:form id="user-form" rendered="#{manageUserBean.displayResult}">
+			<p:toolbar styleClass="data-toolbar" id="user-bulk-button">
+				<f:facet name="left">
+					<p:commandButton value="License Bulk Assignment"
+						action="#{manageUserBean.licenseDialogShow}" icon="ui-icon-tag"
+						update=":bulk-license-dialog"
+						disabled="#{manageUserBean.disableBulk}" id="bulk-license-button"
+						styleClass="button-with-border-top-left" />
+					<p:commandButton value="Project Bulk Assignment"
+						action="#{manageUserBean.projectDialogShow}" icon="ui-icon-tag"
+						update=":bulk-project-dialog"
+						styleClass="button-with-border-top-right"
+						disabled="#{manageUserBean.disableBulk}" id="bulk-project-button" />
+				</f:facet>
+			</p:toolbar>
+
+
+			<p:dataTable var="user" value="#{manageUserBean.resultList}"
+				paginator="true" paginatorAlwaysVisible="true" rows="30"
+				rowSelectMode="add" paginatorPosition="bottom"
+				resizableColumns="true" selection="#{manageUserBean.selectedUsers}"
+				rowKey="#{user.getAttribute('sAMAccountName')}" id="user-table"
+				sortBy="#{user.getAttribute('sAMAccountName')}"
+				style="margin-top:0px !important"
+				rowsPerPageTemplate="30,50,100, 500, 1000" lazy="false">
+				<f:facet name="header">
+            		Users
+        		</f:facet>
+				<p:ajax listener="#{manageUserBean.onRowSelect}"
+					event="rowSelectCheckbox" update=":user-form:user-bulk-button" />
+				<p:ajax listener="#{manageUserBean.onRowUnselect}"
+					event="rowUnselectCheckbox" update=":user-form:user-bulk-button" />
+				<p:ajax event="toggleSelect" update=":user-form:user-bulk-button"
+					listener="#{manageUserBean.onToggleSelect}" />
+
+				<p:ajax event="page" listener="#{manageUserBean.onUserListPage}"
+					update=":user-form:user-bulk-button :user-form:user-table" />
+				<p:ajax event="sort" listener="#{manageUserBean.onUserListSort}"
+					update=":user-form:user-bulk-button :user-form:user-table" />
+				<p:ajax event="filter" listener="#{manageUserBean.onUserListFilter}"
+					update=":user-form:user-bulk-button :user-form:user-table" />
+
+				<p:column selectionMode="multiple" style="text-align:center"
+					width="4%" />
+
+				<p:column filterBy="#{user.getAttribute('sAMAccountName')}"
+					headerText="User Name">
+					<h:outputText value="#{user.getAttribute('sAMAccountName')}" />
+				</p:column>
+
+				<p:column filterBy="#{user.getAttribute('displayName')}"
+					headerText="Display Name">
+					<h:outputText value="#{user.getAttribute('displayName')}" />
+				</p:column>
+
+				<p:column filterBy="#{user.getAttribute('mail')}" headerText="Email">
+					<h:outputText value="#{user.getAttribute('mail')}" />
+				</p:column>
+
+				<p:column filterBy="#{user.getAttribute('department')}"
+					headerText="Department">
+					<h:outputText value="#{user.getAttribute('department')}" />
+				</p:column>
+
+				<p:column headerText="Details" width="50">
+					<p:commandButton icon="ui-icon-search"
+						styleClass="button-with-border button-in-grid"
+						action="#{manageUserBean.getUserDetails(user.getAttribute('sAMAccountName'))}">
+
+					</p:commandButton>
+				</p:column>
+
+
+			</p:dataTable>
+		</h:form>
+
+		<p:dialog header="License Bulk Assignment"
+			widgetVar="bulk-license-dialog" modal="true" closeOnEscape="true"
+			id="bulk-license-dialog" resizable="false" width="25%"
+			styleClass="wide-dialog" dynamic="false">
+			<h:form id="bulk-license-form">
+				<p:dataTable var="license" style="width:100%;"
+					value="#{manageUserBean.licenseForAssignment}" paginator="true"
+					paginatorAlwaysVisible="true" rows="15" resizableColumns="true"
+					paginatorPosition="bottom" sortBy="#{license.name}"
+					rowKey="#{license.name}" id="license-list-table" lazy="true"
+					selection="#{manageUserBean.selectedToAssignLicense}"
+					selectionMode="single">
+					<f:facet name="header">
+            					Licenses
+        					</f:facet>
+					<p:ajax event="rowSelect"
+						listener="#{manageUserBean.onLicenseSelect}"
+						update=":bulk-license-form:bulk-license-button-grid">
+					</p:ajax>
+
+					<p:ajax event="rowUnselect"
+						listener="#{manageUserBean.onLicenseUnselect}"
+						update=":bulk-license-form:bulk-license-button-grid">
+					</p:ajax>
+
+					<p:ajax event="page" listener="#{manageUserBean.onLicenseListPage}"
+						update=":bulk-license-form:bulk-license-button-grid" />
+
+					<p:ajax event="filter"
+						listener="#{manageUserBean.onLicenseListFilter}"
+						update=":bulk-license-form:bulk-license-button-grid" />
+
+					<p:column headerText="Value" filterBy="#{license.name}"
+						width="100%">
+						<h:outputText value="#{license.name}" />
+					</p:column>
+
+				</p:dataTable>
+				<h:panelGrid id="bulk-license-button-grid" columns="2"
+					styleClass="dialog-button-grid">
+					<p:commandButton value="Assign"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageUserBean.bulkAssignRemoveLicense}"
+						id="license-assign-button"
+						disabled="#{manageUserBean.disableLicenseButton}"
+						onclick="loading();" oncomplete="doneLoading();"
+						onerror="doneLoading();">
+						<f:setPropertyActionListener target="#{manageUserBean.bulkAction}"
+							value="assign"></f:setPropertyActionListener>
+					</p:commandButton>
+					<p:commandButton value="Remove"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageUserBean.bulkAssignRemoveLicense}"
+						id="license-remove-button"
+						disabled="#{manageUserBean.disableLicenseButton}"
+						onclick="loading();" oncomplete="doneLoading();"
+						onerror="doneLoading();">
+						<f:setPropertyActionListener target="#{manageUserBean.bulkAction}"
+							value="remove"></f:setPropertyActionListener>
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+
+
+		<p:dialog header="Project Bulk Assignment"
+			widgetVar="bulk-project-dialog" modal="true" closeOnEscape="true"
+			id="bulk-project-dialog" resizable="false" width="25%"
+			styleClass="wide-dialog" dynamic="false">
+			<h:form id="bulk-project-form">
+				<h:panelGrid columns="2" cellpadding="5" style = "margin-bottom:10px">
+					<p:selectBooleanCheckbox
+						value="#{manageUserBean.assignLicensesWithProject}" />
+					<h:outputText
+						value="Assign project's licenses when assigning	 project" />
+				</h:panelGrid>
+				<p:dataTable var="project" style="width:100%;"
+					value="#{manageUserBean.projectForAssignment}" paginator="true"
+					paginatorAlwaysVisible="true" rows="15" resizableColumns="true"
+					paginatorPosition="bottom" sortBy="#{project.name}"
+					rowKey="#{project.name}" id="project-list-table" lazy="true"
+					selection="#{manageUserBean.selectedToAssignProject}"
+					selectionMode="single">
+					<f:facet name="header">
+            					Projects
+        					</f:facet>
+					<p:ajax event="rowSelect"
+						listener="#{manageUserBean.onProjectSelect}"
+						update=":bulk-project-form:bulk-project-button-grid">
+					</p:ajax>
+
+					<p:ajax event="rowUnselect"
+						listener="#{manageUserBean.onProjectUnselect}"
+						update=":bulk-project-form:bulk-project-button-grid">
+					</p:ajax>
+
+					<p:ajax event="page" listener="#{manageUserBean.onProjectListPage}"
+						update=":bulk-project-form:bulk-project-button-grid" />
+
+					<p:ajax event="filter"
+						listener="#{manageUserBean.onProjectListFilter}"
+						update=":bulk-project-form:bulk-project-button-grid" />
+
+					<p:column headerText="Value" filterBy="#{project.name}"
+						width="100%">
+						<h:outputText value="#{project.name}" />
+					</p:column>
+				</p:dataTable>
+				<h:panelGrid id="bulk-project-button-grid" columns="2"
+					styleClass="dialog-button-grid">
+					<p:commandButton value="Assign"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageUserBean.bulkAssignRemoveProject}"
+						id="project-assign-button"
+						disabled="#{manageUserBean.disableProjectButton}"
+						onclick="loading();" oncomplete="doneLoading();">
+						<f:setPropertyActionListener target="#{manageUserBean.bulkAction}"
+							value="assign"></f:setPropertyActionListener>
+					</p:commandButton>
+					<p:commandButton value="Remove"
+						styleClass="dialog-button-multiple button-with-border"
+						action="#{manageUserBean.bulkAssignRemoveProject}"
+						id="project-remove-button"
+						disabled="#{manageUserBean.disableProjectButton}"
+						onclick="loading();" oncomplete="doneLoading();">
+						<f:setPropertyActionListener target="#{manageUserBean.bulkAction}"
+							value="remove"></f:setPropertyActionListener>
+					</p:commandButton>
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>

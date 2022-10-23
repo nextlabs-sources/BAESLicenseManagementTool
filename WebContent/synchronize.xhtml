@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+<ui:composition template="/templates/BasicTemplate.xhtml">
+	<ui:define name="header">
+		<f:metadata>
+			<f:event type="preRenderView"
+				listener="#{userSessionBean.onPageLoad}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="content">
+		<h:outputText value="Synchronize Active Directory and Database"
+			styleClass="page-title"></h:outputText>
+		<p:separator />
+		<p:messages id="messages" showDetail="true" autoUpdate="true"
+			closable="true" globalOnly="true" />
+
+		<h:form id="sync-form">
+			<p:poll interval="5" ignoreAutoUpdate="true"
+				listener="#{manageExecutorServiceBean.updateLicenseProgress}"
+				update=":sync-form:license-executing-task-grid :sync-form:sync-toolbar" />
+			<h:panelGrid columns="1" cellspacing="7">
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SYNCHRONIZE_HELPER1')}"></h:outputText>
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SYNCHRONIZE_HELPER2')}"></h:outputText>
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SYNCHRONIZE_HELPER3')}"></h:outputText>
+				<h:outputText styleClass="context-helper"
+					value="#{userSessionBean.getContextHelper('SYNCHRONIZE_HELPER4')}"></h:outputText>
+			</h:panelGrid>
+			<p:separator></p:separator>
+			<p:toolbar styleClass="data-toolbar" id="sync-toolbar">
+				<f:facet name="left">
+					<p:commandButton id="sync-button" value="Synchronize"
+						icon="ui-icon-gear" action="#{manageExecutorServiceBean.sync}"
+						disabled="#{manageExecutorServiceBean.syncStatus}"
+						update=":sync-form:sync-toolbar :sync-form:message-panel"
+						styleClass="button-with-border-top-left"></p:commandButton>
+				</f:facet>
+				<f:facet name="right">
+					<p:commandButton value="Export" ajax="false"
+						icon="ui-icon-document"
+						actionListener="#{manageExecutorServiceBean.exportSynchronization}"
+						styleClass="" id="export-button"
+						disabled="#{manageExecutorServiceBean.syncTask == null || manageExecutorServiceBean.syncStatus}">
+						<p:fileDownload value="#{manageExecutorServiceBean.exportFile}"></p:fileDownload>
+					</p:commandButton>
+					<p:commandButton value="Clear Details" icon="ui-icon-trash"
+						disabled="#{manageExecutorServiceBean.syncTask == null || manageExecutorServiceBean.syncStatus}"
+						action="#{manageExecutorServiceBean.clearSyncTask}"
+						update=":sync-form:license-executing-task-grid :sync-form:sync-toolbar :sync-form:message-panel"></p:commandButton>
+					<p:commandButton value="Refresh"
+						styleClass="button-with-border-top-right" icon="ui-icon-refresh"
+						style="float:right"
+						update=":sync-form:license-executing-task-grid :sync-form:sync-toolbar :sync-form:message-panel"></p:commandButton>
+				</f:facet>
+			</p:toolbar>
+
+
+
+			<h:panelGrid columns="1" id="license-executing-task-grid"
+				style="margin-top:2%;">
+				<h:outputText
+					value="No synchronization has been performed or the lastest synchronization has been cleared."
+					rendered="#{manageExecutorServiceBean.syncTask == null}" />
+				<h:outputText
+					value="The synchronization has completed. Please check the table below for any error occurred."
+					rendered="#{manageExecutorServiceBean.syncTask != null and manageExecutorServiceBean.syncTask.progress == 100}" />
+				<p:progressBar
+					rendered="#{manageExecutorServiceBean.syncTask!= null and manageExecutorServiceBean.syncStatus}"
+					value="#{manageExecutorServiceBean.syncTask.progress}"
+					labelTemplate="{value}%" styleClass="animated" global="false">
+				</p:progressBar>
+
+				<p:dataTable id="message-panel" paginator="true"
+					paginatorPosition="bottom" paginatorAlwaysVisible="false" rows="10"
+					rendered="#{manageExecutorServiceBean.syncTask!= null}"
+					value="#{manageExecutorServiceBean.syncTask.errorMessages}"
+					var="message">
+					<p:column headerText="Error Messages">
+						<h:outputText value="#{message}" escape="false" />
+					</p:column>
+				</p:dataTable>
+			</h:panelGrid>
+		</h:form>
+	</ui:define>
+	<ui:define name="footer">
+	</ui:define>
+</ui:composition>
+</html>
